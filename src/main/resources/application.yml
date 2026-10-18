@@ -27,3 +27,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+# Fase 4: seguridad. La clave NO tiene valor por defecto a proposito: se lee
+# de la variable de entorno y nunca se escribe en el codigo ni en GitHub.
+pulsepass:
+  security:
+    jwt:
+      issuer: ${PULSEPASS_JWT_ISSUER:pulsepass-api}
+      secret-base64: ${PULSEPASS_JWT_SECRET_BASE64}
+      access-token-ttl: PT15M
