@@ -39,7 +39,8 @@ class UserServiceImplTest {
 
     private RegisterUserRequest buildRequest(LocalDate birthDate) {
         return new RegisterUserRequest("andrea", "andrea@email.com",
-                "Andrea", "Perez", "3001234567", "Santa Marta", birthDate);
+                "Andrea", "Perez", "3001234567", "Santa Marta", birthDate,
+                "ClaveDePrueba2026");
     }
 
     private UserResponse buildResponse() {

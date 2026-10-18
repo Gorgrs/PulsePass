@@ -4,6 +4,7 @@ import com.pulsepass.dto.request.RegisterUserRequest;
 import com.pulsepass.dto.response.UserResponse;
 import com.pulsepass.exception.DuplicateResourceException;
 import com.pulsepass.exception.ResourceNotFoundException;
+import com.pulsepass.service.AuthService;
 import com.pulsepass.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,10 @@ class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
+    // El registro ahora pasa por AuthService (usuario + contrasena + rol en una transaccion).
+    @MockitoBean
+    private AuthService authService;
+
     private static final String VALID_USER_JSON = """
             {
               "username": "andrea",
@@ -41,7 +46,8 @@ class UserControllerTest {
               "lastName": "Gomez",
               "phone": "3001234567",
               "city": "Santa Marta",
-              "birthDate": "1998-05-10"
+              "birthDate": "1998-05-10",
+              "password": "ClaveDePrueba2026"
             }
             """;
 
@@ -52,7 +58,7 @@ class UserControllerTest {
 
     @Test
     void register_validRequest_returns201() throws Exception {
-        when(userService.register(any(RegisterUserRequest.class))).thenReturn(andrea());
+        when(authService.register(any(RegisterUserRequest.class))).thenReturn(andrea());
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,9 +66,11 @@ class UserControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.username").value("andrea"))
-                .andExpect(jsonPath("$.email").value("andrea@correo.com"));
+                .andExpect(jsonPath("$.email").value("andrea@correo.com"))
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
-        verify(userService).register(any(RegisterUserRequest.class));
+        verify(authService).register(any(RegisterUserRequest.class));
     }
 
     @Test
@@ -73,7 +81,8 @@ class UserControllerTest {
                   "email": "esto-no-es-un-email",
                   "firstName": "Andrea",
                   "lastName": "Gomez",
-                  "birthDate": "1998-05-10"
+                  "birthDate": "1998-05-10",
+                  "password": "ClaveDePrueba2026"
                 }
                 """;
 
@@ -86,12 +95,36 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("Validation failed"))
                 .andExpect(jsonPath("$.details.email").value("Email must be valid"));
 
-        verify(userService, never()).register(any(RegisterUserRequest.class));
+        verify(authService, never()).register(any(RegisterUserRequest.class));
+    }
+
+    @Test
+    void register_shortPassword_returns400() throws Exception {
+        String shortPasswordJson = """
+                {
+                  "username": "andrea",
+                  "email": "andrea@correo.com",
+                  "firstName": "Andrea",
+                  "lastName": "Gomez",
+                  "birthDate": "1998-05-10",
+                  "password": "corta"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(shortPasswordJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.details.password")
+                        .value("Password must be between 12 and 72 characters"));
+
+        verify(authService, never()).register(any(RegisterUserRequest.class));
     }
 
     @Test
     void register_duplicateUsername_returns409() throws Exception {
-        when(userService.register(any(RegisterUserRequest.class)))
+        when(authService.register(any(RegisterUserRequest.class)))
                 .thenThrow(new DuplicateResourceException("Username already exists: andrea"));
 
         mockMvc.perform(post("/api/users")
