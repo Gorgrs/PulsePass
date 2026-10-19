@@ -1,7 +1,11 @@
 package com.pulsepass.service;
 
+import com.pulsepass.domain.Event;
+import com.pulsepass.domain.EventStatus;
 import com.pulsepass.domain.Ticket;
 import com.pulsepass.domain.User;
+import com.pulsepass.exception.ResourceNotFoundException;
+import com.pulsepass.repository.EventRepository;
 import com.pulsepass.repository.TicketRepository;
 import com.pulsepass.repository.UserRepository;
 import com.pulsepass.security.SecurityPrincipal;
@@ -12,16 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * Reglas de propiedad (anti-IDOR): compara a quien hace la solicitud con el
- * dueno del recurso, usando siempre el id persistente que sale de la base de
- * datos. Un correo o un codigo enviado por el cliente nunca basta (SEC006).
+ * Reglas de propiedad (anti-IDOR) y de visibilidad: compara a quien hace la
+ * solicitud con el dueno del recurso, usando siempre el id persistente que sale
+ * de la base de datos. Un correo o un codigo enviado por el cliente nunca basta
+ * (SEC006).
  *
- * <p>Se usa desde {@code @PreAuthorize} en {@link TicketService} y
- * {@link UserService}. Si un metodo devuelve false, Spring Security lanza
- * AccessDeniedException y la API responde 403.</p>
+ * <p>Se usa desde {@code @PreAuthorize} y {@code @PostFilter} en los servicios.
+ * Si un metodo devuelve false, Spring Security lanza AccessDeniedException y la
+ * API responde 403.</p>
  *
- * <p>Politica acordada: un recurso ajeno responde 403. Si el ticket no existe,
- * la regla deja pasar y el servicio responde 404 como antes.</p>
+ * <p>Politica acordada: un ticket o un usuario ajeno responde 403. Si el ticket
+ * no existe, la regla deja pasar y el servicio responde 404 como antes. Un
+ * evento no publicado se oculta con 404 para quien no es STAFF ni ADMIN.</p>
  */
 @Service
 @Transactional(readOnly = true)
@@ -32,10 +38,14 @@ public class AuthorizationService {
 
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
+    private final EventRepository eventRepository;
 
-    public AuthorizationService(UserRepository userRepository, TicketRepository ticketRepository) {
+    public AuthorizationService(UserRepository userRepository,
+                                TicketRepository ticketRepository,
+                                EventRepository eventRepository) {
         this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
+        this.eventRepository = eventRepository;
     }
 
     // ---------------------------------------------------------------
@@ -87,7 +97,7 @@ public class AuthorizationService {
 
     /** GET /api/tickets/{code}: el dueno, o STAFF / ADMIN. */
     public boolean canViewTicket(String ticketCode, Authentication authentication) {
-        if (hasRole(authentication, ROLE_ADMIN) || hasRole(authentication, ROLE_STAFF)) {
+        if (isStaffOrAdmin(authentication)) {
             return true;
         }
         return isTicketOwner(ticketCode, authentication);
@@ -112,8 +122,38 @@ public class AuthorizationService {
     }
 
     // ---------------------------------------------------------------
+    // Eventos
+    // ---------------------------------------------------------------
+
+    /** Un evento publicado lo ve cualquiera; los demas estados, solo STAFF y ADMIN. */
+    public boolean canSeeEventStatus(EventStatus status, Authentication authentication) {
+        return status == EventStatus.PUBLISHED || isStaffOrAdmin(authentication);
+    }
+
+    /**
+     * GET /api/events/{code}: deja pasar si el evento esta publicado, si no
+     * existe (el servicio respondera 404) o si quien pregunta es STAFF / ADMIN.
+     * Si el evento existe pero no esta publicado, lanza 404 en vez de
+     * responder 403, para no revelar que hay un borrador.
+     */
+    public boolean ensureEventVisible(String eventCode, Authentication authentication) {
+        if (isStaffOrAdmin(authentication)) {
+            return true;
+        }
+        Optional<Event> event = eventRepository.findByEventCode(eventCode);
+        if (event.isEmpty() || event.get().getStatus() == EventStatus.PUBLISHED) {
+            return true;
+        }
+        throw new ResourceNotFoundException("Event not found: " + eventCode);
+    }
+
+    // ---------------------------------------------------------------
     // Ayudas
     // ---------------------------------------------------------------
+
+    private boolean isStaffOrAdmin(Authentication authentication) {
+        return hasRole(authentication, ROLE_ADMIN) || hasRole(authentication, ROLE_STAFF);
+    }
 
     private Long principalId(Authentication authentication) {
         if (authentication != null

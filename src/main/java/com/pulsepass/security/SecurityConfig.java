@@ -53,8 +53,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Rutas publicas aprobadas.
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/users").permitAll()
+                        // /api/events/* cubre published, el evento por codigo y by-artist.
+                        // Los eventos no publicados se ocultan dentro de EventService.
                         .requestMatchers(HttpMethod.GET,
-                                "/api/events/published", "/api/artists/**", "/api/venues/**").permitAll()
+                                "/api/events/*", "/api/artists/**", "/api/venues/**").permitAll()
                         // Solo ADMIN.
                         .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/events/*/publish").hasRole("ADMIN")

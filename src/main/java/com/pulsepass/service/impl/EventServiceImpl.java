@@ -1,4 +1,3 @@
-
 package com.pulsepass.service.impl;
 
 import com.pulsepass.domain.Artist;
@@ -20,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -153,10 +154,12 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventSummaryResponse> findByArtist(String stageName) {
+        // La lista es modificable a proposito: el @PostFilter de EventService
+        // la recorta para quitar los eventos que el usuario no puede ver.
         return eventRepository.findEventsByArtistStageName(stageName)
                 .stream()
                 .map(eventMapper::toSummary)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private Event getEvent(String eventCode) {
