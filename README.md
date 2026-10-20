@@ -1,10 +1,11 @@
 # PulsePass — capa de persistencia
 
 Plataforma de eventos, artistas y entradas. Este repositorio implementa el MVP
-académico definido en el PRD de PulsePass: **solo la capa de persistencia**.
+académico definido en los PRD de PulsePass. Las secciones 1 a 8 documentan la
+**capa de persistencia** (Fase 1); al final se documentan la **capa de
+controladores REST** (Fase 3) y la **capa de seguridad** (Fase 4).
 
-No hay capa Service ni API REST: el PRD las deja explícitamente fuera de alcance
-(sección 18). El recorrido que cubre el proyecto es:
+El recorrido que cubre la capa de persistencia es:
 
 ```
 Modelo de negocio (PRD)
@@ -296,6 +297,10 @@ mvn spring-boot:run
 
 Flyway aplica V1, V2 y V3 al arrancar; Hibernate valida el esquema resultante.
 
+> **Desde la Fase 4** la aplicación también necesita la variable de entorno
+> `PULSEPASS_JWT_SECRET_BASE64`; sin ella no arranca. Ver la sección
+> "Capa de seguridad (Fase 4)" al final de este documento.
+
 ### Qué mirar en los logs
 
 1. Flyway ejecutando `V1`, `V2` y `V3`.
@@ -354,7 +359,7 @@ pulsepass/
 - [x] Las pruebas de integración usan Testcontainers
 - [x] `mvn clean test` finaliza sin errores
 - [x] El README explica modelo, migraciones, consultas y ejecución
- 
+
 ## Capa de controladores REST (Fase 3)
 
 API REST que expone los Services de las fases anteriores mediante HTTP. Los Controllers solo traducen HTTP: reciben el pedido, delegan en el Service y devuelven un DTO. Las reglas de negocio permanecen en la capa Service, ningún Controller usa un Repository y ningún endpoint devuelve entidades JPA.
@@ -405,3 +410,210 @@ Usan `@WebMvcTest`, MockMvc y los Services simulados con `@MockitoBean`, así qu
 ```
 
 Si el proyecto no incluye el wrapper `mvnw`, se pueden correr desde el IDE con clic derecho sobre la carpeta `controller` de `test` y **Run**.
+
+## Capa de seguridad (Fase 4)
+
+Autenticación con usuario o correo y contraseña, emisión de **JWT firmado (HS256, JJWT 0.13)** de 15 minutos, autorización por rol con **Spring Security** y control de propiedad de los recursos. La API es **stateless**: no usa sesiones ni cookies, solo el encabezado `Authorization: Bearer <token>`.
+
+Las reglas de negocio de las fases anteriores no cambian. Los 20 endpoints conservan su URL, su verbo y su respuesta exitosa; la seguridad se agrega encima.
+
+### Variables de entorno
+
+| Variable | Obligatoria | Por defecto | Descripción |
+|---|---|---|---|
+| `PULSEPASS_JWT_SECRET_BASE64` | **Sí** | ninguno | Clave HMAC en Base64 con **al menos 32 bytes**. Si falta o es más corta, la aplicación **no arranca**. |
+| `PULSEPASS_JWT_ISSUER` | No | `pulsepass-api` | Emisor que se escribe en cada token y se exige al validarlo. |
+| `DB_URL`, `DB_USER`, `DB_PASSWORD` | No | PostgreSQL local | Igual que en la Fase 1. |
+
+La duración del token (`PT15M`, 900 segundos) se configura en `application.yml`, en `pulsepass.security.jwt.access-token-ttl`.
+
+La clave **no** se escribe en el código ni en `application.yml`, y no debe subirse a GitHub. Para generar una (Windows):
+
+```
+powershell -Command "$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)"
+```
+
+En Linux o macOS: `openssl rand -base64 32`. Para usarla en la ventana actual de CMD:
+
+```
+set PULSEPASS_JWT_SECRET_BASE64=<la clave generada>
+mvn spring-boot:run
+```
+
+Desde IntelliJ, se define en **Run > Edit Configurations > Environment variables**.
+
+Las pruebas **no** necesitan esa variable: usan una clave ficticia, exclusiva de los tests, en `src/test/resources/application.properties`.
+
+### Endpoints nuevos y cambios de contrato
+
+| Método | Ruta | Acceso | Resultado |
+|---|---|---|---|
+| POST | `/api/auth/login` | Público | 200 con `accessToken`, `tokenType` y `expiresIn` / 401 / 400 |
+| GET | `/api/auth/me` | Autenticado | 200 con `userId`, `username` y `roles` / 401 |
+| POST | `/api/users` | Público | **Ahora exige `password`** (12 a 72 caracteres y máximo 72 bytes). Crea siempre el rol `USER`. |
+
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{ "identifier": "andrea", "password": "<la contraseña>" }
+```
+
+```
+200 OK
+{ "accessToken": "<JWT>", "tokenType": "Bearer", "expiresIn": 900 }
+```
+
+```
+GET /api/auth/me
+Authorization: Bearer <JWT>
+```
+
+El `identifier` puede ser el username o el correo. El registro no devuelve token: el flujo es **registro, luego login**. `UserResponse` nunca incluye la contraseña ni el hash.
+
+### Roles
+
+| Rol | Para qué |
+|---|---|
+| `USER` | Comprar tickets y consultar o cancelar los suyos. Es el único rol que se obtiene al registrarse. |
+| `STAFF` | Operar la entrada: ver tickets y marcarlos como usados; ver tickets pagados de un evento y eventos no publicados. |
+| `ADMIN` | Crear y publicar eventos, asociar artistas y consultar datos de otros usuarios. |
+
+Los roles `STAFF` y `ADMIN` **no se piden por HTTP**: se asignan en la base de datos. Para una cuenta de prueba local, primero se registra el usuario con `POST /api/users` y luego:
+
+```sql
+INSERT INTO user_roles (user_id, role)
+SELECT id, 'ADMIN' FROM users WHERE username = 'admin1';
+```
+
+Los roles se leen de la base de datos en **cada solicitud**; no viajan dentro del token. Por eso un cambio de rol o la desactivación de un usuario surte efecto de inmediato, aunque su token siga sin vencer.
+
+### Quién puede usar cada una de las 20 operaciones
+
+| Recurso | Método y ruta | Acceso |
+|---|---|---|
+| Venues | `GET /api/venues/{code}` | Público |
+| Venues | `GET /api/venues/active` | Público |
+| Eventos | `POST /api/events` | `ADMIN` |
+| Eventos | `GET /api/events/{eventCode}` | Público si está publicado. Cualquier otro estado: solo `STAFF` y `ADMIN`; para los demás responde 404. |
+| Eventos | `GET /api/events/published` | Público |
+| Eventos | `PATCH /api/events/{eventCode}/publish` | `ADMIN` |
+| Eventos | `POST /api/events/{eventCode}/artists/{artistId}` | `ADMIN` |
+| Eventos | `GET /api/events/by-artist?stageName=...` | Público y `USER`: solo eventos publicados. `STAFF` y `ADMIN`: todos. |
+| Artistas | `GET /api/artists/{id}` | Público |
+| Artistas | `GET /api/artists/by-stage-name?stageName=...` | Público |
+| Artistas | `GET /api/artists/active` | Público |
+| Usuarios | `POST /api/users` | Público |
+| Usuarios | `GET /api/users/by-email?email=...` | El propio usuario o `ADMIN` |
+| Usuarios | `GET /api/users/by-username?username=...` | El propio usuario o `ADMIN` |
+| Tickets | `POST /api/tickets` | `USER`; el `userEmail` debe ser el del usuario autenticado |
+| Tickets | `GET /api/tickets/{ticketCode}` | El dueño, `STAFF` o `ADMIN` |
+| Tickets | `GET /api/tickets/by-user?email=...` | El propio usuario o `ADMIN` |
+| Tickets | `GET /api/events/{eventCode}/tickets/paid` | `STAFF` o `ADMIN` |
+| Tickets | `PATCH /api/tickets/{ticketCode}/cancel` | El dueño o `ADMIN` (se comprueba antes de cambiar el estado) |
+| Tickets | `PATCH /api/tickets/{ticketCode}/use` | `STAFF` o `ADMIN` |
+
+Las rutas que no aparecen en `SecurityConfig` exigen estar autenticado: la política es **denegar por defecto**.
+
+### Códigos de error de seguridad
+
+| Caso | HTTP |
+|---|---|
+| Sin token, token vencido, alterado, de otro emisor o mal formado | 401 |
+| Contraseña incorrecta, usuario inexistente o usuario inactivo en el login | 401, siempre con el mismo mensaje |
+| Usuario autenticado sin el rol necesario | 403 |
+| Ticket o datos de usuario de otra persona | 403 |
+| Evento no publicado visto por quien no es `STAFF` ni `ADMIN` | 404, igual que si no existiera |
+
+Todos usan el mismo `ErrorResponse` (`timestamp`, `status`, `error`, `message`, `details`). Los errores 401 y 403 que ocurren en el filtro, antes de llegar a los controladores, se escriben con `SecurityErrorWriter`; los que ocurren dentro de un servicio los maneja `GlobalExceptionHandler`.
+
+### Base de datos
+
+`V4__security_credentials_roles.sql` crea `user_credentials` (hash BCrypt, relación 1:1 con `users`) y `user_roles` (clave primaria compuesta y `CHECK` que solo admite `USER`, `STAFF` y `ADMIN`). Los usuarios que ya existían reciben el rol `USER` y **no tienen contraseña**, así que no pueden iniciar sesión hasta una activación segura; no se asigna ninguna contraseña por defecto.
+
+### Cambios sobre las fases anteriores
+
+- `RegisterUserRequest` incorpora el campo `password`.
+- `UserController.register` pasa por `AuthService`, para crear usuario, hash y rol en una sola transacción.
+- `TicketService`, `UserService` y `EventService` llevan reglas `@PreAuthorize` y `@PostFilter` que usan `AuthorizationService`.
+- `GlobalExceptionHandler` agrega el manejo de `AccessDeniedException` como 403.
+- `EventServiceImpl.findByArtist` devuelve una lista modificable, para que el filtro de seguridad pueda recortarla.
+
+### Pruebas de la Fase 4
+
+| Clase | Pruebas | Tipo | Cubre |
+|---|---:|---|---|
+| `JwtServiceTest` | 18 | unitaria | firma, claims, vencimiento, emisor, token manipulado, sin firma, clave débil |
+| `AuthServiceTest` | 7 | unitaria | login correcto, credenciales inválidas, usuario inactivo, hash y rol en el registro |
+| `CustomUserDetailsServiceTest` | 8 | unitaria | usuario existente, inexistente, sin credencial, inactivo, roles actualizados |
+| `AuthorizationServiceTest` | 20 | unitaria | dueño contra tercero, correos ajenos, STAFF, ADMIN, visibilidad de eventos |
+| `JwtAuthenticationFilterTest` | 11 | unitaria | sin Bearer, Bearer válido e inválido, doble encabezado, autenticación existente |
+| `SecurityFlowIT` | 23 | integración (MockMvc, cadena de filtros real) | 401 y 403, tokens inválidos, roles, usuario desactivado |
+| `TicketOwnershipIT` | 11 | integración | compra, consulta, cancelación y uso de tickets ajenos |
+| `EventVisibilityIT` | 9 | integración | borradores ocultos, búsqueda por artista |
+| `CredentialPersistenceIT` | 9 | integración | migración V4, hash BCrypt, unicidad de roles, login con un usuario real |
+
+Las pruebas de integración usan PostgreSQL real con Testcontainers y no desactivan los filtros de seguridad. Todas las contraseñas, hashes y claves de las pruebas son ficticios.
+
+### Cómo verificar
+
+Con Docker en ejecución:
+
+```
+mvn clean test
+```
+
+Resultado esperado: `BUILD SUCCESS`. Para correr solo las pruebas de seguridad de integración:
+
+```
+mvn test -Dtest="SecurityFlowIT,TicketOwnershipIT,EventVisibilityIT,CredentialPersistenceIT"
+```
+
+Si no hay Maven instalado, se corren desde IntelliJ: panel **Maven > pulsepass > Lifecycle > test**.
+
+### Estructura agregada
+
+```
+src/main/java/com/pulsepass
+├── controller/AuthController.java
+├── domain/            Role.java  UserCredential.java  UserRole.java
+├── dto/request/       LoginRequest.java
+├── dto/response/      AuthResponse.java  AuthenticatedUserResponse.java
+├── repository/        UserCredentialRepository.java  UserRoleRepository.java
+├── service/           AuthService.java  AuthorizationService.java
+└── security/          SecurityConfig.java  JwtProperties.java  JwtService.java
+                       JwtAuthenticationFilter.java  CustomUserDetailsService.java
+                       SecurityPrincipal.java  SecurityErrorWriter.java
+                       RestAuthenticationEntryPoint.java  RestAccessDeniedHandler.java
+src/main/resources/db/migration/V4__security_credentials_roles.sql
+src/test/resources/application.properties        (clave JWT ficticia, solo para pruebas)
+```
+
+### Limitaciones conocidas
+
+Esta fase es un MVP académico. **No** implementa, y no debe presentarse como implementado:
+
+- Refresh tokens, cierre de sesión con revocación de tokens, ni revocación individual por `jti`. Cerrar sesión en el cliente solo borra su copia: un token ya emitido sigue siendo válido hasta vencer (15 minutos), aunque un usuario desactivado es rechazado en la solicitud siguiente.
+- Límite de intentos de login ni protección contra fuerza bruta.
+- MFA, recuperación de contraseña, OAuth2 ni proveedor externo de identidad.
+- Rotación de la clave de firma. Se usa una clave simétrica compartida por una sola aplicación.
+- Asignación de `STAFF` a eventos concretos: el dominio no lo modela, así que `STAFF` actúa sobre todos los eventos. En producción debe restringirse.
+- HTTPS: es obligatorio fuera de `localhost`, pero la aplicación no lo impone por sí misma.
+
+### Definition of Done de la Fase 4 (sección 22 del PRD)
+
+- [x] Se mantienen las 20 rutas heredadas y sus respuestas exitosas
+- [x] El registro crea usuario, contraseña con hash y rol `USER` en una sola transacción
+- [x] El login correcto emite un JWT válido y el erróneo devuelve 401
+- [x] `JwtService` valida firma, emisor, `sub`, `exp` y algoritmo
+- [x] API stateless; Bearer obligatorio salvo las excepciones públicas explícitas
+- [x] Las reglas de `USER`, `STAFF` y `ADMIN` están probadas
+- [x] Ningún `USER` consulta, compra para o cancela tickets de terceros
+- [x] Ni los eventos borrador ni los datos privados quedan expuestos por un GET público
+- [x] `ErrorResponse` es consistente para 400, 401, 403, 404, 409 y 500
+- [x] No hay secretos escritos en el código ni contraseñas sin hash (la clave de las pruebas es ficticia)
+- [x] Flyway se ejecuta con éxito sobre un esquema nuevo
+- [ ] Flyway sobre un esquema ya migrado: no se probó contra una base existente
+- [x] Las pruebas unitarias, de MockMvc con filtros y de integración pasan
+- [x] No se modificaron reglas de negocio existentes sin un requerimiento explícito
+- [x] El README incluye variables, roles de prueba, endpoints y comandos de verificación
