@@ -1,0 +1,5 @@
+# Ambientes exportados con valores locales (tokens/contraseñas)
+*.local.postman_environment.json
+*-con-secretos*.json
+# Evidencias locales (capturas)
+evidencias/

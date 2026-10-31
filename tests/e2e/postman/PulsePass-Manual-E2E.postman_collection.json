@@ -1,0 +1,3961 @@
+{
+  "info": {
+    "_postman_id": "86c7e8f6-1b8e-4aa8-9797-2ddda5a39ed6",
+    "name": "PulsePass — E2E Manual",
+    "description": "Colección de pruebas E2E **manuales** de PulsePass (Fase 5).\n\n- 22 rutas: 20 de negocio + POST /api/auth/login + GET /api/auth/me.\n- Sin scripts (Pre-request / Post-response vacíos), sin Runner, sin Newman.\n- Cada request se envía con **Send**; el número de 3 dígitos es el orden de ejecución (ver checklist-e2e-manual.md).\n- Política de recurso ajeno o no visible: **403** (variable expectedForeignResourceStatus); borrador para visitante: 404.\n- Los tokens se copian a mano desde accessToken a userAToken, userBToken, userCToken, userDToken, staffToken y adminToken.\n- Los tokens duran 15 min: si un request protegido da 401 inesperado, repite el login de ese actor y actualiza su variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 Preparación / conectividad",
+      "description": "Comprueba que la API y los fixtures responden.",
+      "item": [
+        {
+          "name": "001 · PRE-01 · Conectividad: API arriba y fixtures cargados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "venues",
+                "active"
+              ]
+            },
+            "description": "**ID:** PRE-01  \n**Paso de la checklist:** 001  \n**Objetivo:** Conectividad: API arriba y fixtures cargados  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- La aplicación responde con un arreglo JSON.\n- Aparece el venue de prueba (venueActiveCode).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 Venues (2 rutas)",
+      "description": "GET /api/venues/active y /api/venues/{code}.",
+      "item": [
+        {
+          "name": "002 · TC-BIZ-001a · Listar venues activos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "venues",
+                "active"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-001a  \n**Paso de la checklist:** 002  \n**Objetivo:** Listar venues activos  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Arreglo JSON; incluye el venue de {{venueActiveCode}} con active = true.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "003 · TC-BIZ-001b · Consultar venue por código",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueActiveCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "venues",
+                "{{venueActiveCode}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-001b  \n**Paso de la checklist:** 003  \n**Objetivo:** Consultar venue por código  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Coincide con el venue de la lista (código, nombre, ciudad).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Artists (3 rutas)",
+      "description": "GET /api/artists/active, /{id} y /by-stage-name.",
+      "item": [
+        {
+          "name": "005 · TC-BIZ-002a · Listar artistas activos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artists",
+                "active"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-002a  \n**Paso de la checklist:** 005  \n**Objetivo:** Listar artistas activos  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Aparecen los artistas del catálogo inicial, solo activos.\n\n**Copiar:** Del artista cuyo stageName sea el de artistStageName (Solar Beat), copiar el valor de \"id\" → variable artistId. No supongas que es 1.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "006 · TC-BIZ-002b · Consultar artista por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/{{artistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artists",
+                "{{artistId}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-002b  \n**Paso de la checklist:** 006  \n**Objetivo:** Consultar artista por ID  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Mismo artista que en la lista (id y stageName).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "008 · TC-BIZ-002c · Consultar artista por stage name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/by-stage-name?stageName={{artistStageName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artists",
+                "by-stage-name"
+              ],
+              "query": [
+                {
+                  "key": "stageName",
+                  "value": "{{artistStageName}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-BIZ-002c  \n**Paso de la checklist:** 008  \n**Objetivo:** Consultar artista por stage name  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Mismo artista que en TC-BIZ-002a (consulta consistente).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Auth / usuarios (registro, login, me)",
+      "description": "Registro, login y /api/auth/me para cada actor.",
+      "item": [
+        {
+          "name": "010 · TC-AUTH-001 · Registrar USER_A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-001  \n**Paso de la checklist:** 010  \n**Objetivo:** Registrar USER_A  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- UserResponse con id, username y email iguales a los enviados, active = true, firstName, lastName, phone, city y birthDate.\n- Sin password ni passwordHash. No devuelve token.\n- Rol efectivo no mayor a USER (se comprueba en /api/auth/me).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userAUsername}}\",\n  \"email\": \"{{userAEmail}}\",\n  \"firstName\": \"Andrea\",\n  \"lastName\": \"Prueba\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "011 · TC-BIZ-006a · Registrar USER_B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-006a  \n**Paso de la checklist:** 011  \n**Objetivo:** Registrar USER_B  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- Identidad distinta a USER_A (id, username y email diferentes).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userBUsername}}\",\n  \"email\": \"{{userBEmail}}\",\n  \"firstName\": \"Carlos\",\n  \"lastName\": \"Prueba\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"{{userBPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "013 · TC-SEC-016a · Registrar USER_C con un campo roles=ADMIN inyectado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-SEC-016a  \n**Paso de la checklist:** 013  \n**Objetivo:** Registrar USER_C con un campo roles=ADMIN inyectado  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- 201: el campo roles se ignora. (Un 400 también demostraría que no se escala; lo importante es que NO obtenga ADMIN.)\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userCUsername}}\",\n  \"email\": \"{{userCEmail}}\",\n  \"firstName\": \"Camila\",\n  \"lastName\": \"Prueba\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"roles\": [\n    \"ADMIN\"\n  ],\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "018 · PRE-04 · Registrar la cuenta que será STAFF",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** PRE-04  \n**Paso de la checklist:** 018  \n**Objetivo:** Registrar la cuenta que será STAFF  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- 201 sin password ni hash.\n- El rol STAFF se asigna después por SQL (paso SQL-1), no por HTTP.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{staffIdentifier}}\",\n  \"email\": \"{{staffEmail}}\",\n  \"firstName\": \"Laura\",\n  \"lastName\": \"Staff\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"{{staffPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "019 · PRE-05 · Registrar la cuenta que será ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** PRE-05  \n**Paso de la checklist:** 019  \n**Objetivo:** Registrar la cuenta que será ADMIN  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- 201 sin password ni hash.\n- El rol ADMIN se asigna después por SQL (paso SQL-1), no por HTTP.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{adminIdentifier}}\",\n  \"email\": \"{{adminEmail}}\",\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Prueba\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "020 · TC-AUTH-002 · Login USER_A con username",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-002  \n**Paso de la checklist:** 020  \n**Objetivo:** Login USER_A con username  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- accessToken no vacío, tokenType = Bearer, expiresIn = 900.\n\n**Copiar:** accessToken → userAToken. Copia el MISMO valor también en expiredToken (lo usarás al final, cuando pasen más de 15 min).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{userAUsername}}\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "021 · TC-AUTH-003 · Login USER_A con email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-003  \n**Paso de la checklist:** 021  \n**Objetivo:** Login USER_A con email  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Mismo usuario que en TC-AUTH-002.\n- accessToken no vacío.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{userAEmail}}\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "022 · TC-AUTH-016a · Login USER_B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-016a  \n**Paso de la checklist:** 022  \n**Objetivo:** Login USER_B  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- 200 con accessToken.\n\n**Copiar:** accessToken → userBToken.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{userBUsername}}\",\n  \"password\": \"{{userBPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "023 · TC-SEC-016b · Login USER_C",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-SEC-016b  \n**Paso de la checklist:** 023  \n**Objetivo:** Login USER_C  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- 200 con accessToken.\n\n**Copiar:** accessToken → userCToken.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{userCUsername}}\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "024 · TC-AUTH-016b · Login STAFF (cuenta con rol asignado por SQL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-016b  \n**Paso de la checklist:** 024  \n**Objetivo:** Login STAFF (cuenta con rol asignado por SQL)  \n**Actor:** ANONYMOUS  \n**Precondiciones:** SQL-1 ejecutado (rol STAFF asignado).  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- 200 con accessToken.\n\n**Copiar:** accessToken → staffToken.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{staffIdentifier}}\",\n  \"password\": \"{{staffPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "025 · TC-AUTH-016c · Login ADMIN (cuenta con rol asignado por SQL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-016c  \n**Paso de la checklist:** 025  \n**Objetivo:** Login ADMIN (cuenta con rol asignado por SQL)  \n**Actor:** ANONYMOUS  \n**Precondiciones:** SQL-1 ejecutado (rol ADMIN asignado).  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- 200 con accessToken.\n\n**Copiar:** accessToken → adminToken.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{adminIdentifier}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "028 · TC-AUTH-006 · /api/auth/me con token de USER_A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-006  \n**Paso de la checklist:** 028  \n**Objetivo:** /api/auth/me con token de USER_A  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- userId, username y roles = [USER].\n- Sin password, hash ni correo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "029 · TC-AUTH-016d · /api/auth/me con token de USER_B",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-016d  \n**Paso de la checklist:** 029  \n**Objetivo:** /api/auth/me con token de USER_B  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Identidad de B; roles = [USER].\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "030 · TC-SEC-016c · /api/auth/me de USER_C (rol inyectado)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-SEC-016c  \n**Paso de la checklist:** 030  \n**Objetivo:** /api/auth/me de USER_C (rol inyectado)  \n**Actor:** USER_C  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userCToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- roles = [USER] únicamente. No obtuvo ADMIN.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userCToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "031 · TC-AUTH-016e · /api/auth/me con token STAFF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-016e  \n**Paso de la checklist:** 031  \n**Objetivo:** /api/auth/me con token STAFF  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Los roles incluyen STAFF.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "032 · TC-AUTH-016f · /api/auth/me con token ADMIN",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-016f  \n**Paso de la checklist:** 032  \n**Objetivo:** /api/auth/me con token ADMIN  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Los roles incluyen ADMIN.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "097 · TC-AUTH-013a · Registrar USER_D (será desactivado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-013a  \n**Paso de la checklist:** 097  \n**Objetivo:** Registrar USER_D (será desactivado)  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- 201 con UserResponse de USER_D.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userDUsername}}\",\n  \"email\": \"{{userDEmail}}\",\n  \"firstName\": \"Daniela\",\n  \"lastName\": \"Prueba\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "098 · TC-AUTH-013b · Login USER_D",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-013b  \n**Paso de la checklist:** 098  \n**Objetivo:** Login USER_D  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- 200 con accessToken.\n\n**Copiar:** accessToken → userDToken.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{userDUsername}}\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Usuarios / consulta y propiedad (2 rutas)",
+      "description": "GET /api/users/by-email y /by-username (propiedad).",
+      "item": [
+        {
+          "name": "061 · TC-BIZ-016a · USER_A consulta su usuario por email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/by-email?email={{userAEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "by-email"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{userAEmail}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-BIZ-016a  \n**Paso de la checklist:** 061  \n**Objetivo:** USER_A consulta su usuario por email  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Datos de USER_A.\n- Sin password ni hash.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "062 · TC-BIZ-016b · USER_A consulta su usuario por username",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/by-username?username={{userAUsername}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "by-username"
+              ],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "{{userAUsername}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-BIZ-016b  \n**Paso de la checklist:** 062  \n**Objetivo:** USER_A consulta su usuario por username  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Datos de USER_A.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "063 · TC-BIZ-016c · ADMIN consulta a USER_A por email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/by-email?email={{userAEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "by-email"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{userAEmail}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-BIZ-016c  \n**Paso de la checklist:** 063  \n**Objetivo:** ADMIN consulta a USER_A por email  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Datos de USER_A (ADMIN autorizado).\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Events / administración y visibilidad (6 rutas)",
+      "description": "Crear, leer, asociar artista y publicar eventos; visibilidad de borradores.",
+      "item": [
+        {
+          "name": "042 · TC-BIZ-003 · ADMIN crea el evento (borrador)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-003  \n**Paso de la checklist:** 042  \n**Objetivo:** ADMIN crea el evento (borrador)  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- eventCode = {{draftEventCode}}, status = DRAFT, venueCode = {{venueActiveCode}}, artists = [].\n- Al no fallar como duplicado, confirma que los intentos anteriores no crearon nada.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"{{draftEventCode}}\",\n  \"name\": \"PulsePass E2E {{runId}}\",\n  \"description\": \"Evento creado por la prueba manual E2E\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": 18,\n  \"venueCode\": \"{{venueActiveCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "043 · TC-BIZ-003b · ADMIN crea un segundo evento (queda en borrador)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-003b  \n**Paso de la checklist:** 043  \n**Objetivo:** ADMIN crea un segundo evento (queda en borrador)  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- eventCode = {{eventToPublishCode}}, status = DRAFT.\n- Se usa en TC-BIZ-014a (compra para evento en borrador).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"{{eventToPublishCode}}\",\n  \"name\": \"PulsePass E2E {{runId}} B\",\n  \"description\": \"Evento creado por la prueba manual E2E\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": 18,\n  \"venueCode\": \"{{venueActiveCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "048 · TC-SEC-015 · ADMIN consulta el borrador",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}"
+              ]
+            },
+            "description": "**ID:** TC-SEC-015  \n**Paso de la checklist:** 048  \n**Objetivo:** ADMIN consulta el borrador  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- ADMIN sí puede ver el borrador: status = DRAFT.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "049 · TC-SEC-015b · STAFF consulta el borrador",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}"
+              ]
+            },
+            "description": "**ID:** TC-SEC-015b  \n**Paso de la checklist:** 049  \n**Objetivo:** STAFF consulta el borrador  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- STAFF (operador) sí puede ver el borrador: status = DRAFT.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "051 · TC-BIZ-005a · ADMIN asocia el artista al evento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}/artists/{{artistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}",
+                "artists",
+                "{{artistId}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-005a  \n**Paso de la checklist:** 051  \n**Objetivo:** ADMIN asocia el artista al evento  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- El artista queda asociado al evento: artists contiene a Solar Beat (mismo id que artistId).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "057 · TC-BIZ-004a · ADMIN publica el evento",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}",
+                "publish"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-004a  \n**Paso de la checklist:** 057  \n**Objetivo:** ADMIN publica el evento  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- status = PUBLISHED.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "058 · TC-BIZ-004b · Visitante lista los eventos publicados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/published",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "published"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-004b  \n**Paso de la checklist:** 058  \n**Objetivo:** Visitante lista los eventos publicados  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- El evento {{publishedEventCode}} aparece en la lista; el borrador B no.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "059 · TC-BIZ-017 · Visitante lee el evento publicado por código",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{publishedEventCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{publishedEventCode}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-017  \n**Paso de la checklist:** 059  \n**Objetivo:** Visitante lee el evento publicado por código  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- El evento ahora es público (status = PUBLISHED).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "060 · TC-BIZ-005b · Por artista, anónimo, ya publicado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/by-artist?stageName={{artistStageName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "by-artist"
+              ],
+              "query": [
+                {
+                  "key": "stageName",
+                  "value": "{{artistStageName}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-BIZ-005b  \n**Paso de la checklist:** 060  \n**Objetivo:** Por artista, anónimo, ya publicado  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Ahora el evento SÍ aparece.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Tickets / compra, consulta y ciclo de vida (6 rutas)",
+      "description": "Comprar, consultar, listar pagados, cancelar y usar tickets.",
+      "item": [
+        {
+          "name": "067 · TC-BIZ-007a · USER_A compra ticket GENERAL (T1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-007a  \n**Paso de la checklist:** 067  \n**Objetivo:** USER_A compra ticket GENERAL (T1)  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- status = PAID, type = GENERAL, price = 100000.00, userEmail = {{userAEmail}}, eventCode = {{publishedEventCode}}.\n- ticketCode con formato TKT-XXXXXXXX.\n\n**Copiar:** ticketCode → ticketCancelableCode (T1: se cancelará).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"{{userAEmail}}\",\n  \"eventCode\": \"{{publishedEventCode}}\",\n  \"type\": \"GENERAL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "068 · TC-BIZ-008a · USER_A lee su ticket T1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-008a  \n**Paso de la checklist:** 068  \n**Objetivo:** USER_A lee su ticket T1  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Propietario y estado (PAID) correctos.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "069 · TC-BIZ-008b · USER_A lista sus tickets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/by-user?email={{userAEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "by-user"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{userAEmail}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-BIZ-008b  \n**Paso de la checklist:** 069  \n**Objetivo:** USER_A lista sus tickets  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- T1 aparece en la lista.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "070 · TC-BIZ-008c · STAFF consulta T1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-008c  \n**Paso de la checklist:** 070  \n**Objetivo:** STAFF consulta T1  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- STAFF (operador) puede leer el ticket; propietario = USER_A.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "071 · TC-BIZ-008d · ADMIN lista los tickets de USER_A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/by-user?email={{userAEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "by-user"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{userAEmail}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-BIZ-008d  \n**Paso de la checklist:** 071  \n**Objetivo:** ADMIN lista los tickets de USER_A  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- T1 aparece en la lista (ADMIN autorizado).\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "084 · TC-BIZ-009 · STAFF lista tickets pagados del evento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{publishedEventCode}}/tickets/paid",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{publishedEventCode}}",
+                "tickets",
+                "paid"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-009  \n**Paso de la checklist:** 084  \n**Objetivo:** STAFF lista tickets pagados del evento  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Incluye T1 (PAID). No incluye cancelados ni usados.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "085 · TC-BIZ-010 · USER_A cancela T1",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}",
+                "cancel"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-010  \n**Paso de la checklist:** 085  \n**Objetivo:** USER_A cancela T1  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- status = CANCELLED.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "088 · TC-BIZ-007b · USER_A compra ticket T2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-007b  \n**Paso de la checklist:** 088  \n**Objetivo:** USER_A compra ticket T2  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 201  \n**Revisión manual:**\n- status = PAID, price = 100000.00.\n- ticketCode distinto de T1.\n\n**Copiar:** ticketCode → ticketUsableCode (T2: se marcará como usado).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"{{userAEmail}}\",\n  \"eventCode\": \"{{publishedEventCode}}\",\n  \"type\": \"GENERAL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "091 · TC-BIZ-012 · STAFF marca T2 como usado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketUsableCode}}/use",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketUsableCode}}",
+                "use"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-012  \n**Paso de la checklist:** 091  \n**Objetivo:** STAFF marca T2 como usado  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- status = USED.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 Seguridad / escenarios negativos",
+      "description": "Casos 401/403/404 de autenticación, roles, JWT e IDOR.",
+      "item": [
+        {
+          "name": "009 · TC-AUTH-015 · Bearer inválido en ruta PÚBLICA",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "venues",
+                "active"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-015  \n**Paso de la checklist:** 009  \n**Objetivo:** Bearer inválido en ruta PÚBLICA  \n**Actor:** ANONYMOUS (token de ejemplo)  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer abc.def.ghi (valor de ejemplo)  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- El token inválido se ignora: se trata como anónimo y nunca autentica.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "abc.def.ghi",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "026 · TC-AUTH-004 · Login con contraseña incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-004  \n**Paso de la checklist:** 026  \n**Objetivo:** Login con contraseña incorrecta  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 con message \"Credenciales inválidas\".\n- No revela si el usuario existe.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{userAUsername}}\",\n  \"password\": \"NoEsLaClave-0000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "027 · TC-AUTH-005 · Login con identificador inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-005  \n**Paso de la checklist:** 027  \n**Objetivo:** Login con identificador inexistente  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 con el MISMO message \"Credenciales inválidas\" que TC-AUTH-004 (sin enumeración).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"usuario-que-no-existe-{{runId}}\",\n  \"password\": \"NoEsLaClave-0000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "033 · TC-AUTH-007 · Ruta protegida sin header Authorization",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-007  \n**Paso de la checklist:** 033  \n**Objetivo:** Ruta protegida sin header Authorization  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\").\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "034 · TC-AUTH-008 · Bearer inventado / malformado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-008  \n**Paso de la checklist:** 034  \n**Objetivo:** Bearer inventado / malformado  \n**Actor:** ANONYMOUS (token de ejemplo)  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer inventado (valor de ejemplo)  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\").\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "inventado",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "035 · TC-AUTH-009 · JWT alterado (un carácter cambiado)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-009  \n**Paso de la checklist:** 035  \n**Objetivo:** JWT alterado (un carácter cambiado)  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{tamperedToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). El token nunca llega al controller.\n\n**Copiar:** ANTES de enviar: copia userAToken en tamperedToken y cambia UN carácter en la MITAD de la firma (la última parte). No cambies el último carácter: sus 2 últimos bits no cuentan y el token podría seguir siendo válido.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tamperedToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "036 · TC-AUTH-011 · JWT firmado con otra clave",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-011  \n**Paso de la checklist:** 036  \n**Objetivo:** JWT firmado con otra clave  \n**Actor:** ANONYMOUS (JWT de otra clave)  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{foreignKeyToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). El token fue construido offline con una clave exclusiva de test (nunca la de la app).\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{foreignKeyToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "037 · TC-AUTH-011b · JWT sin firma (alg=none)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-011b  \n**Paso de la checklist:** 037  \n**Objetivo:** JWT sin firma (alg=none)  \n**Actor:** ANONYMOUS (JWT alg=none)  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{unsignedToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). El servidor no acepta tokens sin firma.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{unsignedToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "038 · TC-AUTH-012 · Token por query string en vez de Bearer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me?access_token={{userAToken}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "access_token",
+                  "value": "{{userAToken}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-AUTH-012  \n**Paso de la checklist:** 038  \n**Objetivo:** Token por query string en vez de Bearer  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). El token por la URL no se acepta.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "039 · TC-SEC-001a · Crear evento sin token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-SEC-001a  \n**Paso de la checklist:** 039  \n**Objetivo:** Crear evento sin token  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). No se crea evento.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"{{draftEventCode}}\",\n  \"name\": \"PulsePass E2E {{runId}}\",\n  \"description\": \"Evento creado por la prueba manual E2E\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": 18,\n  \"venueCode\": \"{{venueActiveCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "040 · TC-SEC-001b · Crear evento como USER_A (cubre también TC-AUTH-014)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-SEC-001b  \n**Paso de la checklist:** 040  \n**Objetivo:** Crear evento como USER_A (cubre también TC-AUTH-014)  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). No se crea evento.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"{{draftEventCode}}\",\n  \"name\": \"PulsePass E2E {{runId}}\",\n  \"description\": \"Evento creado por la prueba manual E2E\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": 18,\n  \"venueCode\": \"{{venueActiveCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "041 · TC-SEC-001c · Crear evento como STAFF",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-SEC-001c  \n**Paso de la checklist:** 041  \n**Objetivo:** Crear evento como STAFF  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). STAFF no puede crear eventos. No se crea evento.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"{{draftEventCode}}\",\n  \"name\": \"PulsePass E2E {{runId}}\",\n  \"description\": \"Evento creado por la prueba manual E2E\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": 18,\n  \"venueCode\": \"{{venueActiveCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "047 · TC-SEC-004 · Borrador visto por un anónimo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}"
+              ]
+            },
+            "description": "**ID:** TC-SEC-004  \n**Paso de la checklist:** 047  \n**Objetivo:** Borrador visto por un anónimo  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 404  \n**Revisión manual:**\n- ErrorResponse 404 con message \"Event not found: <draftEventCode>\". No devuelve datos del borrador.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "052 · TC-SEC-003 · USER_A intenta asociar un artista",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}/artists/{{artistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}",
+                "artists",
+                "{{artistId}}"
+              ]
+            },
+            "description": "**ID:** TC-SEC-003  \n**Paso de la checklist:** 052  \n**Objetivo:** USER_A intenta asociar un artista  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). No se asocia nada.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "053 · TC-SEC-005 · Por artista, anónimo, con el evento aún en borrador",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/by-artist?stageName={{artistStageName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "by-artist"
+              ],
+              "query": [
+                {
+                  "key": "stageName",
+                  "value": "{{artistStageName}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-SEC-005  \n**Paso de la checklist:** 053  \n**Objetivo:** Por artista, anónimo, con el evento aún en borrador  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- El borrador NO aparece en la lista.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "054 · TC-SEC-002a · USER_A intenta publicar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}",
+                "publish"
+              ]
+            },
+            "description": "**ID:** TC-SEC-002a  \n**Paso de la checklist:** 054  \n**Objetivo:** USER_A intenta publicar  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). El evento sigue en borrador.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "055 · TC-SEC-002b · STAFF intenta publicar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{draftEventCode}}/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{draftEventCode}}",
+                "publish"
+              ]
+            },
+            "description": "**ID:** TC-SEC-002b  \n**Paso de la checklist:** 055  \n**Objetivo:** STAFF intenta publicar  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). El evento sigue en borrador.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "064 · TC-SEC-006 · USER_B consulta el email de USER_A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/by-email?email={{userAEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "by-email"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{userAEmail}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-SEC-006  \n**Paso de la checklist:** 064  \n**Objetivo:** USER_B consulta el email de USER_A  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). Sin datos personales de USER_A.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "065 · TC-SEC-007 · USER_B consulta el username de USER_A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/by-username?username={{userAUsername}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "by-username"
+              ],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "{{userAUsername}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-SEC-007  \n**Paso de la checklist:** 065  \n**Objetivo:** USER_B consulta el username de USER_A  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). Sin datos personales de USER_A.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "066 · TC-SEC-007b · Visitante consulta usuario por username",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/by-username?username={{userAUsername}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "by-username"
+              ],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "{{userAUsername}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-SEC-007b  \n**Paso de la checklist:** 066  \n**Objetivo:** Visitante consulta usuario por username  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). Sin datos personales.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "072 · TC-SEC-008 · USER_A intenta comprar a nombre de USER_B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ]
+            },
+            "description": "**ID:** TC-SEC-008  \n**Paso de la checklist:** 072  \n**Objetivo:** USER_A intenta comprar a nombre de USER_B  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). No se crea ticket a nombre de B.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"{{userBEmail}}\",\n  \"eventCode\": \"{{publishedEventCode}}\",\n  \"type\": \"GENERAL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "074 · TC-SEC-008c · Comprar sin token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ]
+            },
+            "description": "**ID:** TC-SEC-008c  \n**Paso de la checklist:** 074  \n**Objetivo:** Comprar sin token  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). No se crea ticket.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"{{userAEmail}}\",\n  \"eventCode\": \"{{publishedEventCode}}\",\n  \"type\": \"GENERAL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "075 · TC-SEC-009 · USER_B lee el ticket T1 de A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}"
+              ]
+            },
+            "description": "**ID:** TC-SEC-009  \n**Paso de la checklist:** 075  \n**Objetivo:** USER_B lee el ticket T1 de A  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). Sin datos del ticket.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "076 · TC-SEC-009b · Visitante lee T1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}"
+              ]
+            },
+            "description": "**ID:** TC-SEC-009b  \n**Paso de la checklist:** 076  \n**Objetivo:** Visitante lee T1  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). Sin datos del ticket.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "078 · TC-SEC-010 · USER_B lista los tickets de A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/by-user?email={{userAEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "by-user"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{userAEmail}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-SEC-010  \n**Paso de la checklist:** 078  \n**Objetivo:** USER_B lista los tickets de A  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). Sin información de A.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "079 · TC-SEC-011 · USER_B intenta cancelar T1",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}",
+                "cancel"
+              ]
+            },
+            "description": "**ID:** TC-SEC-011  \n**Paso de la checklist:** 079  \n**Objetivo:** USER_B intenta cancelar T1  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). T1 no cambia (se comprueba en el paso siguiente de integridad).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "080 · TC-SEC-012 · USER_B intenta marcar T1 como usado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}/use",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}",
+                "use"
+              ]
+            },
+            "description": "**ID:** TC-SEC-012  \n**Paso de la checklist:** 080  \n**Objetivo:** USER_B intenta marcar T1 como usado  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). T1 no cambia.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "082 · TC-SEC-013 · USER_A intenta ver los tickets pagados del evento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{publishedEventCode}}/tickets/paid",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{publishedEventCode}}",
+                "tickets",
+                "paid"
+              ]
+            },
+            "description": "**ID:** TC-SEC-013  \n**Paso de la checklist:** 082  \n**Objetivo:** USER_A intenta ver los tickets pagados del evento  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\").\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "083 · TC-SEC-013b · Visitante consulta tickets pagados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{publishedEventCode}}/tickets/paid",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{publishedEventCode}}",
+                "tickets",
+                "paid"
+              ]
+            },
+            "description": "**ID:** TC-SEC-013b  \n**Paso de la checklist:** 083  \n**Objetivo:** Visitante consulta tickets pagados  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\").\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "090 · TC-SEC-012b · USER_A intenta marcar su propio T2 como usado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketUsableCode}}/use",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketUsableCode}}",
+                "use"
+              ]
+            },
+            "description": "**ID:** TC-SEC-012b  \n**Paso de la checklist:** 090  \n**Objetivo:** USER_A intenta marcar su propio T2 como usado  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). Solo STAFF/ADMIN pueden marcar uso. T2 sigue PAID.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "099 · TC-AUTH-013c · /api/auth/me de USER_D (antes de desactivarlo)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-013c  \n**Paso de la checklist:** 099  \n**Objetivo:** /api/auth/me de USER_D (antes de desactivarlo)  \n**Actor:** USER_D  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userDToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Identidad de USER_D.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userDToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "100 · TC-SEC-017a · STAFF ve tickets pagados (antes de quitarle el rol)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{publishedEventCode}}/tickets/paid",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{publishedEventCode}}",
+                "tickets",
+                "paid"
+              ]
+            },
+            "description": "**ID:** TC-SEC-017a  \n**Paso de la checklist:** 100  \n**Objetivo:** STAFF ve tickets pagados (antes de quitarle el rol)  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- 200 con el arreglo de tickets pagados.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "101 · TC-AUTH-013d · /api/auth/me de USER_D (DESPUÉS de desactivarlo por SQL)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-013d  \n**Paso de la checklist:** 101  \n**Objetivo:** /api/auth/me de USER_D (DESPUÉS de desactivarlo por SQL)  \n**Actor:** USER_D  \n**Precondiciones:** SQL-2 ejecutado (USER_D desactivado y rol STAFF revocado).  \n**Autorización:** Bearer {{userDToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\"). Pierde el acceso aunque el token no haya vencido.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userDToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "102 · TC-AUTH-013e · Login de USER_D desactivado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-013e  \n**Paso de la checklist:** 102  \n**Objetivo:** Login de USER_D desactivado  \n**Actor:** ANONYMOUS  \n**Precondiciones:** SQL-2 ejecutado.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 con message \"Credenciales inválidas\": un usuario inactivo no recibe JWT.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{userDUsername}}\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "103 · TC-SEC-017b · STAFF ve tickets pagados (DESPUÉS de quitarle el rol por SQL)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{publishedEventCode}}/tickets/paid",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{publishedEventCode}}",
+                "tickets",
+                "paid"
+              ]
+            },
+            "description": "**ID:** TC-SEC-017b  \n**Paso de la checklist:** 103  \n**Objetivo:** STAFF ve tickets pagados (DESPUÉS de quitarle el rol por SQL)  \n**Actor:** STAFF  \n**Precondiciones:** SQL-2 ejecutado.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 403  \n**Revisión manual:**\n- ErrorResponse 403 (message: \"No tiene permisos para realizar esta operación\"). El privilegio se pierde en la petición siguiente, con el mismo token.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "104 · TC-AUTH-010 · JWT expirado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "**ID:** TC-AUTH-010  \n**Paso de la checklist:** 104  \n**Objetivo:** JWT expirado  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{expiredToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 401  \n**Revisión manual:**\n- ErrorResponse 401 (message: \"Autenticación requerida o token inválido\").\n\n**Copiar:** ANTES de enviar: espera a que pasen más de 15 min desde el paso 020 (expiredToken guardado entonces).\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{expiredToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08 Validaciones y errores HTTP",
+      "description": "Validaciones 400, ausentes 404, duplicados y transiciones 409.",
+      "item": [
+        {
+          "name": "004 · TC-HTTP-005 · Venue inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/CODIGO-INEXISTENTE",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "venues",
+                "CODIGO-INEXISTENTE"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-005  \n**Paso de la checklist:** 004  \n**Objetivo:** Venue inexistente  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 404  \n**Revisión manual:**\n- ErrorResponse con sus 5 campos (timestamp, status, error, message, details), status = 404 y message \"Venue not found: CODIGO-INEXISTENTE\".\n- Sin stack trace ni datos internos.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "007 · TC-HTTP-ART-404 · Artista inexistente por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artists",
+                "999999"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-ART-404  \n**Paso de la checklist:** 007  \n**Objetivo:** Artista inexistente por ID  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 404  \n**Revisión manual:**\n- ErrorResponse con 5 campos, status = 404 y message \"Artist not found: 999999\"; sin datos internos.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "012 · TC-BIZ-006b · Registro duplicado (USER_A otra vez)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-006b  \n**Paso de la checklist:** 012  \n**Objetivo:** Registro duplicado (USER_A otra vez)  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 409  \n**Revisión manual:**\n- ErrorResponse 409 con message \"Username already exists: <username de A>\".\n- No se crea un segundo usuario.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userAUsername}}\",\n  \"email\": \"{{userAEmail}}\",\n  \"firstName\": \"Andrea\",\n  \"lastName\": \"Prueba\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "014 · TC-HTTP-001 · Registro sin campos obligatorios",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-001  \n**Paso de la checklist:** 014  \n**Objetivo:** Registro sin campos obligatorios  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 400  \n**Revisión manual:**\n- ErrorResponse 400, message \"Validation failed\"; details lista username, email, firstName, lastName, birthDate y password.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "015 · TC-HTTP-002 · Registro con correo mal formado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-002  \n**Paso de la checklist:** 015  \n**Objetivo:** Registro con correo mal formado  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 400  \n**Revisión manual:**\n- ErrorResponse 400, message \"Validation failed\"; details.email = \"Email must be valid\".\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{userAUsername}}\",\n  \"email\": \"esto-no-es-un-correo\",\n  \"firstName\": \"X\",\n  \"lastName\": \"Y\",\n  \"phone\": \"3001234567\",\n  \"city\": \"Santa Marta\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "016 · TC-HTTP-006 · Registro con contraseña de menos de 12 caracteres",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-006  \n**Paso de la checklist:** 016  \n**Objetivo:** Registro con contraseña de menos de 12 caracteres  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 400  \n**Revisión manual:**\n- ErrorResponse 400, message \"Validation failed\"; details.password = \"Password must be between 12 and 72 characters\".\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"corto{{runId}}\",\n  \"email\": \"corto.{{runId}}@pulsepass.test\",\n  \"firstName\": \"X\",\n  \"lastName\": \"Y\",\n  \"birthDate\": \"2000-01-01\",\n  \"password\": \"corta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "017 · TC-HTTP-003 · JSON mal formado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-003  \n**Paso de la checklist:** 017  \n**Objetivo:** JSON mal formado  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 400  \n**Revisión manual:**\n- ErrorResponse 400 con message \"Malformed JSON request\".\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"x\", \"email\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "044 · TC-BIZ-015a · Crear evento con código duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-015a  \n**Paso de la checklist:** 044  \n**Objetivo:** Crear evento con código duplicado  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 409  \n**Revisión manual:**\n- ErrorResponse 409 con message \"Event already exists: <draftEventCode>\".\n- No se crea un segundo evento.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"{{draftEventCode}}\",\n  \"name\": \"PulsePass E2E {{runId}}\",\n  \"description\": \"Evento creado por la prueba manual E2E\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": 18,\n  \"venueCode\": \"{{venueActiveCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "045 · TC-BIZ-015b · Crear evento con datos inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-015b  \n**Paso de la checklist:** 045  \n**Objetivo:** Crear evento con datos inválidos  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 400  \n**Revisión manual:**\n- ErrorResponse 400, message \"Validation failed\"; details.name = \"Event name is required\" y details.minimumAge = \"Minimum age must be 0 or greater\".\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"E2E-{{runId}}-X\",\n  \"name\": \"\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": -1,\n  \"venueCode\": \"{{venueActiveCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "046 · TC-BIZ-015c · Crear evento con un venue que no existe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-015c  \n**Paso de la checklist:** 046  \n**Objetivo:** Crear evento con un venue que no existe  \n**Actor:** ADMIN  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{adminToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 404  \n**Revisión manual:**\n- ErrorResponse 404 con message \"Venue not found: VENUE-INEXISTENTE\".\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventCode\": \"E2E-{{runId}}-X\",\n  \"name\": \"Evento sin venue\",\n  \"category\": \"MUSIC\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"minimumAge\": 18,\n  \"venueCode\": \"VENUE-INEXISTENTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "050 · TC-HTTP-EVT-404 · Evento inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/NO-EXISTE-{{runId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "NO-EXISTE-{{runId}}"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-EVT-404  \n**Paso de la checklist:** 050  \n**Objetivo:** Evento inexistente  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 404  \n**Revisión manual:**\n- ErrorResponse 404 con 5 campos y message \"Event not found: NO-EXISTE-<runId>\".\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "077 · TC-HTTP-TKT-404 · STAFF consulta un ticket inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/TKT-NOEXISTE",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "TKT-NOEXISTE"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-TKT-404  \n**Paso de la checklist:** 077  \n**Objetivo:** STAFF consulta un ticket inexistente  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 404  \n**Revisión manual:**\n- ErrorResponse 404 con 5 campos y message \"Ticket not found: TKT-NOEXISTE\".\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "087 · TC-BIZ-011 · Cancelar T1 otra vez",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}",
+                "cancel"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-011  \n**Paso de la checklist:** 087  \n**Objetivo:** Cancelar T1 otra vez  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 409  \n**Revisión manual:**\n- ErrorResponse 409 con message \"Only PAID tickets can be cancelled. Current status: CANCELLED\".\n- Sin mutación.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "093 · TC-BIZ-013 · STAFF marca T2 como usado otra vez",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketUsableCode}}/use",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketUsableCode}}",
+                "use"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-013  \n**Paso de la checklist:** 093  \n**Objetivo:** STAFF marca T2 como usado otra vez  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 409  \n**Revisión manual:**\n- ErrorResponse 409 con message \"Only PAID tickets can be marked as used. Current status: USED\".\n- Sin doble transición.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "094 · TC-BIZ-014a · USER_A compra para un evento en borrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-014a  \n**Paso de la checklist:** 094  \n**Objetivo:** USER_A compra para un evento en borrador  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 409  \n**Revisión manual:**\n- ErrorResponse 409 con message \"Tickets can only be purchased for PUBLISHED events. Current status: DRAFT\".\n- No se crea ticket.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"{{userAEmail}}\",\n  \"eventCode\": \"{{eventToPublishCode}}\",\n  \"type\": \"GENERAL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "095 · TC-BIZ-014b · USER_A compra para un evento que no existe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-014b  \n**Paso de la checklist:** 095  \n**Objetivo:** USER_A compra para un evento que no existe  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 404  \n**Revisión manual:**\n- ErrorResponse 404 con message \"Event not found: EVENTO-INEXISTENTE\".\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"{{userAEmail}}\",\n  \"eventCode\": \"EVENTO-INEXISTENTE\",\n  \"type\": \"GENERAL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "096 · TC-HTTP-004 · Compra con un type que no existe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets"
+              ]
+            },
+            "description": "**ID:** TC-HTTP-004  \n**Paso de la checklist:** 096  \n**Objetivo:** Compra con un type que no existe  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 400  \n**Revisión manual:**\n- ErrorResponse 400 con message \"Malformed JSON request\" (el enum no existe). No se crea ticket.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"{{userAEmail}}\",\n  \"eventCode\": \"{{publishedEventCode}}\",\n  \"type\": \"TIPO_INEXISTENTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "09 Flujos de negocio / verificaciones de estado",
+      "description": "Relecturas que prueban el estado persistido tras cada operación.",
+      "item": [
+        {
+          "name": "056 · TC-BIZ-004z · Antes de publicar: /published no muestra el evento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/published",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "published"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-004z  \n**Paso de la checklist:** 056  \n**Objetivo:** Antes de publicar: /published no muestra el evento  \n**Actor:** ANONYMOUS  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Sin Authorization  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- El arreglo NO contiene {{draftEventCode}} (borrador oculto).\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "073 · TC-SEC-008b · USER_B lista sus tickets (integridad de TC-SEC-008)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/by-user?email={{userBEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "by-user"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{userBEmail}}"
+                }
+              ]
+            },
+            "description": "**ID:** TC-SEC-008b  \n**Paso de la checklist:** 073  \n**Objetivo:** USER_B lista sus tickets (integridad de TC-SEC-008)  \n**Actor:** USER_B  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userBToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- Arreglo vacío: no se creó ningún ticket a nombre de B.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "081 · TC-SEC-011b · Integridad: T1 sigue PAID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}"
+              ]
+            },
+            "description": "**ID:** TC-SEC-011b  \n**Paso de la checklist:** 081  \n**Objetivo:** Integridad: T1 sigue PAID  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- status = PAID y propietario = USER_A: los intentos de B no mutaron nada.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "086 · TC-BIZ-010b · Releer T1 tras cancelar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketCancelableCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketCancelableCode}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-010b  \n**Paso de la checklist:** 086  \n**Objetivo:** Releer T1 tras cancelar  \n**Actor:** USER_A  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{userAToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- status = CANCELLED persistido.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "089 · TC-BIZ-009b · STAFF relista pagados: T1 ya no aparece",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{publishedEventCode}}/tickets/paid",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{publishedEventCode}}",
+                "tickets",
+                "paid"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-009b  \n**Paso de la checklist:** 089  \n**Objetivo:** STAFF relista pagados: T1 ya no aparece  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- T1 (CANCELLED) no aparece; T2 (PAID) sí aparece.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "092 · TC-BIZ-012b · Releer T2 tras uso",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketUsableCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tickets",
+                "{{ticketUsableCode}}"
+              ]
+            },
+            "description": "**ID:** TC-BIZ-012b  \n**Paso de la checklist:** 092  \n**Objetivo:** Releer T2 tras uso  \n**Actor:** STAFF  \n**Precondiciones:** Pasos anteriores de la checklist ejecutados.  \n**Autorización:** Bearer {{staffToken}}  \n**Ejecución:** abrir el request, revisar la pestaña Authorization y pulsar **Send**.  \n**HTTP esperado:** 200  \n**Revisión manual:**\n- status = USED persistido.\n\n**Nota:** caso añadido según el PRD (no estaba en la colección original); el esperado se contrastó con el código de PulsePass. Si tu API responde distinto, regístralo como FAIL y descríbelo como hallazgo.\n\n**Evidencia:** anotar HTTP real, JSON/estado observado y PASS/FAIL/BLOCKED en `registro-ejecucion-manual.md`. No pegar tokens ni contraseñas.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staffToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
